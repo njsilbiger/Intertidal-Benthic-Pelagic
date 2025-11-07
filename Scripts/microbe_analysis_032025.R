@@ -122,16 +122,19 @@ data_all<-data_all %>%
 # make it long  and select just the parameters I am working with
 data_long<-data_all %>%
   ungroup()%>%
-  filter(removal_control != "Removal") %>%
-  select(month, pool_id,day_night, time_point,removal_control, foundation_spp,do_mg_l,heterotrophic_bacterioplankton_m_l,tyrosine_like,tryptophan_like, phenylalanine_like, ultra_violet_humic_like, visible_humic_like, marine_humic_like, nn_umol_l, nh4_umol_l) %>%
+  mutate(together = paste(before_after, removal_control),
+         manipulated = ifelse(together == "After Removal","Manipulated", "Not Manipulated"))%>%
+  
+  #filter(removal_control != "Removal") %>%
+  select(month, pool_id,day_night, time_point,removal_control, manipulated,foundation_spp,do_mg_l,heterotrophic_bacterioplankton_m_l,tyrosine_like,tryptophan_like, phenylalanine_like, ultra_violet_humic_like, visible_humic_like, marine_humic_like, bix, hix, m_c, nn_umol_l, nh4_umol_l) %>%
   pivot_longer(cols = do_mg_l:nh4_umol_l) %>%
-  group_by(month, name, foundation_spp,time_point, day_night, removal_control)%>%
+  group_by(month, name, foundation_spp,time_point, day_night, manipulated)%>%
   summarise(mean_val = mean(value, na.rm = TRUE), # calculate means and SE
             se_val= sd(value, na.rm = TRUE)/sqrt(n())) %>%
   mutate(time_point_clean = ifelse(time_point == "start","Early", "Late"))%>%
   mutate(nicenames = case_when(  ## make pretty names for plotting
     name == "do_mg_l" ~ "DO <br> (mg L<sup>-1</sup>)",
-    name == "heterotrophic_bacterioplankton_m_l" ~ "Heterotrophic <br> (# mL<sup>-1</sup>)",
+    name == "heterotrophic_bacterioplankton_m_l" ~ "Heterotrophic <br> (cells &mu;L<sup>-1</sup>)",
     name == "nh4_umol_l" ~ "Ammonium <br> (&mu;mol L<sup>-1</sup>)",
     name == "nn_umol_l" ~ "Nitrate+Nitrite <br> (&mu;mol L<sup>-1</sup>)",
     name == "hix"~"HIX",
@@ -148,14 +151,14 @@ data_long<-data_all %>%
   mutate(nicenames = factor(nicenames, levels = c("DO <br> (mg L<sup>-1</sup>)",
                                                   "Ammonium <br> (&mu;mol L<sup>-1</sup>)",
                                                   "Nitrate+Nitrite <br> (&mu;mol L<sup>-1</sup>)",
-                                                  "Heterotrophic <br> (# mL<sup>-1</sup>)",
                                                   "Tyrosine <br> (Raman units)",
                                                   "Tryptophan <br> (Raman units)",
                                                   "Phenylalanine <br> (Raman units)",
                                                   "UV Humic <br> (Raman units)",
                                                   "Visible Humic <br> (Raman units)",
                                                   "Marine Humic <br> (Raman units)",
-                                                  "HIX","BIX","M:C"
+                                                  "HIX","BIX","M:C",
+                                                  "Heterotrophic <br> (cells &mu;L<sup>-1</sup>)"
                                                   
                                                   
   )))
@@ -771,7 +774,7 @@ ocean <-data_all %>%
   pivot_longer(cols = do_mg_l:visible_humic_like) %>%
   mutate(nicenames = case_when(
     name == "do_mg_l" ~ "Dissolved Oxygen <br> (mg L<sup>-1</sup>)",
-    name == "heterotrophic_bacterioplankton_m_l" ~ "Heterotrophic Bacteria <br> (counts &mu;L<sup>-1</sup>)",
+    name == "heterotrophic_bacterioplankton_m_l" ~ "Heterotrophic Bacteria <br> (cells &mu;L<sup>-1</sup>)",
     name == "nh4_umol_l" ~ "Ammonium <br> (&mu;mol L<sup>-1</sup>)",
     name == "nn_umol_l" ~ "Nitrate+Nitrite <br> (&mu;mol L<sup>-1</sup>)",
     name == "bix"~"BIX" ,
@@ -795,7 +798,7 @@ ocean <-data_all %>%
                                                   "UV Humic <br> (Raman units)",
                                                   "Visible Humic <br> (Raman units)",
                                                   "Marine Humic <br> (Raman units)",
-                                                  "Heterotrophic Bacteria <br> (counts &mu;L<sup>-1</sup>)"
+                                                  "Heterotrophic Bacteria <br> (cells &mu;L<sup>-1</sup>)"
   )))%>%
   mutate(removal = "Ocean")
 
@@ -809,32 +812,18 @@ value_plotdata<-values %>%
   mutate(before_after = ifelse(month == "July","Before","After"))%>%
   mutate(nicenames = case_when(
     name == "do_mg_l" ~ "Dissolved Oxygen <br> (mg L<sup>-1</sup>)",
-    name == "heterotrophic_bacterioplankton_m_l" ~ "Heterotrophic Bacteria <br> (counts &mu;L<sup>-1</sup>)",
+    name == "heterotrophic_bacterioplankton_m_l" ~ "Heterotrophic Bacteria <br> (cells &mu;L<sup>-1</sup>)",
     name == "nh4_umol_l" ~ "Ammonium <br> (&mu;mol L<sup>-1</sup>)",
     name == "nn_umol_l" ~ "Nitrate+Nitrite <br> (&mu;mol L<sup>-1</sup>)",
     name == "bix"~"BIX" ,
-  #  name == "hix"~"HIX",
     name == "m_c"~"M:C",
-  #  name =="tyrosine_like" ~"Tyrosine <br> (Raman units)",
-  #  name == "tryptophan_like" ~ "Tryptophan <br> (Raman units)",
-  #  name == "phenylalanine_like" ~"Phenylalanine <br> (Raman units)",
-  #  name == "ultra_violet_humic_like" ~"UV Humic <br> (Raman units)",
-  #  name == "visible_humic_like" ~"Visible Humic <br> (Raman units)",
-  #  name == "marine_humic_like" ~ "Marine Humic <br> (Raman units)")
-  ))%>%
+   ))%>%
   mutate(nicenames = factor(nicenames, levels = c("Dissolved Oxygen <br> (mg L<sup>-1</sup>)",
                                                   "Ammonium <br> (&mu;mol L<sup>-1</sup>)",
                                                   "Nitrate+Nitrite <br> (&mu;mol L<sup>-1</sup>)",
                                                   "BIX" ,
                                                   "M:C",
-                                               #   "HIX",
-                                              #    "Tyrosine <br> (Raman units)",
-                                              #    "Tryptophan <br> (Raman units)",
-                                              #    "Phenylalanine <br> (Raman units)",
-                                              #    "UV Humic <br> (Raman units)",
-                                              #    "Visible Humic <br> (Raman units)",
-                                              #    "Marine Humic <br> (Raman units)",
-                                                  "Heterotrophic Bacteria <br> (counts &mu;L<sup>-1</sup>)"
+                                                  "Heterotrophic Bacteria <br> (cells &mu;L<sup>-1</sup>)"
   )))
 
 
@@ -937,8 +926,6 @@ BenthicData %>%
 
 ggsave(here("Output","Figure_1c.pdf"), width = 10, height = 8, device = cairo_pdf)
 
-
-
 BenthicData %>%
   # filter(Before_After == "After")%>%
   mutate(Before_After = factor(Before_After, levels = c("Before","After")))%>%
@@ -968,7 +955,7 @@ scale_y2 <- Long_wfDOM %>%
   filter(name %in% c("heterotrophic_bacterioplankton_m_l",
                      "nh4_umol_l","nn_umol_l","bix", "m_c", "do_mg_l")) %>%
    mutate(nicenames2 = case_when(
-    name == "heterotrophic_bacterioplankton_m_l" ~ "&Delta;Heterotrophic Bacteria <br> (counts &mu;m<sup>-2</sup> hr<sup>-1</sup>)",
+    name == "heterotrophic_bacterioplankton_m_l" ~ "&Delta;Heterotrophic Bacteria <br> (cells m<sup>-2</sup> hr<sup>-1</sup>)",
     name == "nh4_umol_l" ~ "&Delta;Ammonium <br> (&mu;mol m<sup>-2</sup> hr<sup>-1</sup>)",
     name == "nn_umol_l" ~ "&Delta;Nitrate+Nitrite <br> (&mu;mol m<sup>-2</sup> hr<sup>-1</sup>)",
     name == "bix"~"&Delta;BIX <br> (m<sup>-2</sup> hr<sup>-1</sup>)" ,
@@ -979,7 +966,7 @@ scale_y2 <- Long_wfDOM %>%
     "&Delta;Nitrate+Nitrite <br> (&mu;mol m<sup>-2</sup> hr<sup>-1</sup>)",
     "&Delta;BIX <br> (m<sup>-2</sup> hr<sup>-1</sup>)"  ,
     "&Delta;M:C <br> (m<sup>-2</sup> hr<sup>-1</sup>)" ,
-    "&Delta;Heterotrophic Bacteria <br> (counts &mu;m<sup>-2</sup> hr<sup>-1</sup>)"
+    "&Delta;Heterotrophic Bacteria <br> (cells m<sup>-2</sup> hr<sup>-1</sup>)"
   ))) %>%
   ungroup()%>%
   group_by(foundation_spp, nicenames2, before_after, manipulated)%>%
@@ -1001,7 +988,7 @@ scale_y2 <- Long_wfDOM %>%
 rate_mean_plot<-Long_wfDOM %>%
   mutate(nicenames2 = case_when(
     name == "do_mg_l" ~"&Delta;Dissolved Oxygen <br> (mgl m<sup>-2</sup> hr<sup>-1</sup>)",
-    name == "heterotrophic_bacterioplankton_m_l" ~ "&Delta;Heterotrophic Bacteria <br> (counts &mu;m<sup>-2</sup> hr<sup>-1</sup>)",
+    name == "heterotrophic_bacterioplankton_m_l" ~ "&Delta;Heterotrophic Bacteria <br> (cells m<sup>-2</sup> hr<sup>-1</sup>)",
     name == "nh4_umol_l" ~ "&Delta;Ammonium <br> (&mu;mol m<sup>-2</sup> hr<sup>-1</sup>)",
     name == "nn_umol_l" ~ "&Delta;Nitrate+Nitrite <br> (&mu;mol m<sup>-2</sup> hr<sup>-1</sup>)",
     name == "bix"~"&Delta;BIX <br> (m<sup>-2</sup> hr<sup>-1</sup>)" ,
@@ -1012,7 +999,7 @@ rate_mean_plot<-Long_wfDOM %>%
                                                   "&Delta;Nitrate+Nitrite <br> (&mu;mol m<sup>-2</sup> hr<sup>-1</sup>)",
                                                   "&Delta;BIX <br> (m<sup>-2</sup> hr<sup>-1</sup>)"  ,
                                                   "&Delta;M:C <br> (m<sup>-2</sup> hr<sup>-1</sup>)" ,
-                                                 "&Delta;Heterotrophic Bacteria <br> (counts &mu;m<sup>-2</sup> hr<sup>-1</sup>)"
+                                                 "&Delta;Heterotrophic Bacteria <br> (cells m<sup>-2</sup> hr<sup>-1</sup>)"
   ))) %>%
   
   filter(before_after == "After")%>%
@@ -1099,11 +1086,6 @@ value_mean_plot<-value_plotdata %>%
   #scale_y4
 
 
-design <- "
-  11111122
-  33333344
- "
-
 Fig4<-((rate_mean_plot&theme(legend.position = "none", axis.text.x = element_blank()))+r_int+theme(aspect.ratio = 1, axis.title.x = element_blank()) +plot_layout(nrow = 1, widths = c(8,1)))/((value_mean_plot&theme(legend.position = "none"))+con_int+theme(aspect.ratio = 1, axis.title.x = element_blank()) +plot_layout(nrow = 1, widths = c(8,1)))
 
 Fig4
@@ -1168,7 +1150,7 @@ scale_y3 <- value_plotdata %>%
                       "nh4_umol_l","nn_umol_l","bix", "m_c")) %>%
    mutate(nicenames2 = case_when(
      name == "do_mg_l"~"&Delta;Dissolved Oxygen <br> (mgl m<sup>-2</sup> hr<sup>-1</sup>)",
-     name == "heterotrophic_bacterioplankton_m_l" ~ "&Delta;Heterotrophic Bacteria <br> (counts &mu;m<sup>-2</sup> hr<sup>-1</sup>)",
+     name == "heterotrophic_bacterioplankton_m_l" ~ "&Delta;Heterotrophic Bacteria <br> (cells m<sup>-2</sup> hr<sup>-1</sup>)",
      name == "nh4_umol_l" ~ "&Delta;Ammonium <br> (&mu;mol m<sup>-2</sup> hr<sup>-1</sup>)",
      name == "nn_umol_l" ~ "&Delta;Nitrate+Nitrite <br> (&mu;mol m<sup>-2</sup> hr<sup>-1</sup>)",
      name == "bix"~"&Delta;BIX <br> (m<sup>-2</sup> hr<sup>-1</sup>)" ,
@@ -1180,7 +1162,7 @@ scale_y3 <- value_plotdata %>%
      "&Delta;Nitrate+Nitrite <br> (&mu;mol m<sup>-2</sup> hr<sup>-1</sup>)",
      "&Delta;BIX <br> (m<sup>-2</sup> hr<sup>-1</sup>)"  ,
      "&Delta;M:C <br> (m<sup>-2</sup> hr<sup>-1</sup>)" ,
-     "&Delta;Heterotrophic Bacteria <br> (counts &mu;m<sup>-2</sup> hr<sup>-1</sup>)"
+     "&Delta;Heterotrophic Bacteria <br> (cells m<sup>-2</sup> hr<sup>-1</sup>)"
    ))) %>%
    ungroup()%>%
    group_by(foundation_spp, nicenames2, before_after, month)%>%
@@ -1202,7 +1184,7 @@ scale_y3 <- value_plotdata %>%
   
  rate_box<-Long_wfDOM %>%
    mutate(nicenames2 = case_when( name == "do_mg_l"~"&Delta;Dissolved Oxygen <br> (mgl m<sup>-2</sup> hr<sup>-1</sup>)",
-     name == "heterotrophic_bacterioplankton_m_l" ~ "&Delta;Heterotrophic Bacteria <br> (counts &mu;m<sup>-2</sup> hr<sup>-1</sup>)",
+     name == "heterotrophic_bacterioplankton_m_l" ~ "&Delta;Heterotrophic Bacteria <br> (cells m<sup>-2</sup> hr<sup>-1</sup>)",
      name == "nh4_umol_l" ~ "&Delta;Ammonium <br> (&mu;mol m<sup>-2</sup> hr<sup>-1</sup>)",
      name == "nn_umol_l" ~ "&Delta;Nitrate+Nitrite <br> (&mu;mol m<sup>-2</sup> hr<sup>-1</sup>)",
      name == "bix"~"&Delta;BIX <br> (m<sup>-2</sup> hr<sup>-1</sup>)" ,
@@ -1214,7 +1196,7 @@ scale_y3 <- value_plotdata %>%
      "&Delta;Nitrate+Nitrite <br> (&mu;mol m<sup>-2</sup> hr<sup>-1</sup>)",
      "&Delta;BIX <br> (m<sup>-2</sup> hr<sup>-1</sup>)"  ,
      "&Delta;M:C <br> (m<sup>-2</sup> hr<sup>-1</sup>)" ,
-     "&Delta;Heterotrophic Bacteria <br> (counts &mu;m<sup>-2</sup> hr<sup>-1</sup>)"
+     "&Delta;Heterotrophic Bacteria <br> (cells m<sup>-2</sup> hr<sup>-1</sup>)"
    ))) %>%
  mutate(month = factor(ifelse(before_after == "Before", "July", "August"), levels = c("July", "August"))) %>%
    filter(removal_control == "Control")%>%
@@ -1247,3 +1229,148 @@ ggsave(filename = here("Output","Figure_2.pdf"), height = 12, width = 12, device
 
 mean_box|conc1
 ggsave(filename = here("Output","Figure_3.pdf"), height = 12, width = 12, device = cairo_pdf)
+
+
+##### Make the supplemental Plot Reaction Norms
+P_July<-data_long %>%
+  filter(name %in% c("do_mg_l","nn_umol_l","nh4_umol_l","heterotrophic_bacterioplankton_m_l","bix","m_c"))%>%
+  mutate(foundation_spp = case_when( foundation_spp == "Ocean"~ "Ocean",
+                                     foundation_spp == "Mytilus" ~ "Mussels",
+                                     foundation_spp == "Phyllospadix" ~"Surfgrass")) %>%
+  mutate(linetype = ifelse(foundation_spp == "Ocean", "dashed","solid"))%>% # make different lines
+    filter(month == "July") %>%
+    ggplot(aes(x = time_point_clean, y = mean_val, color = foundation_spp, 
+               group = foundation_spp, lty = linetype)
+     )+
+    geom_point(size = 3)+
+    geom_line()+
+    geom_errorbar(aes(x = time_point_clean, ymin = mean_val - se_val, ymax = mean_val+se_val), width = 0.1, linetype = "solid")+
+  scale_linetype_identity(guide = NULL)+
+    facet_wrap(~nicenames, scales = "free_y", strip.position = "left", nrow = 6)+
+    facetted_pos_scales(
+      y = rep(list(
+        scale_y_continuous(limits=c(6, 25)),
+        scale_y_continuous(limits=c(0, 30)),
+        scale_y_continuous(limits=c(0, 16)),
+        scale_y_continuous(limits = c(0.8, 1.2)),
+        scale_y_continuous(limits=c(0.9, 1.4)),
+      scale_y_continuous(limits = c(0, 1000))
+        ), each = 1))+
+    labs(x = "",
+         y = "",
+         color = "",
+         title = "Before \n (July)"
+         )+
+    scale_color_manual(values = c("grey30","#79ACBD","#567d46"))+
+    theme_bw()+
+    theme(strip.background = element_blank(),
+          strip.placement = "outside",
+          strip.text.y.left = element_markdown(size = 14),
+          axis.text = element_text(size = 12),
+          axis.text.x = element_text(face = "bold"),
+          axis.title = element_text(size = 14, face = "bold"),
+          legend.position = "bottom",
+          legend.text = element_text(size = 14), 
+          plot.title = element_text(hjust = 0.5, size = 14)
+    )
+
+P_Aug_control<-data_long %>%
+  filter(name %in% c("do_mg_l","nn_umol_l","nh4_umol_l","heterotrophic_bacterioplankton_m_l","bix","m_c"))%>%
+  mutate(foundation_spp = case_when( foundation_spp == "Ocean"~ "Ocean",
+                                     foundation_spp == "Mytilus" ~ "Mussels",
+                                     foundation_spp == "Phyllospadix" ~"Surfgrass")) %>%
+  mutate(linetype = ifelse(foundation_spp == "Ocean", "dashed","solid"))%>% # make different lines
+  filter(month != "July",
+         manipulated == "Not Manipulated"
+  ) %>%
+  ggplot(aes(x = time_point_clean, y = mean_val, color = foundation_spp, 
+             group = foundation_spp, lty = linetype)
+  )+
+  geom_point(size = 3)+
+  geom_line()+
+  geom_errorbar(aes(x = time_point_clean, ymin = mean_val - se_val, ymax = mean_val+se_val), width = 0.1, linetype = "solid")+
+  scale_linetype_identity(guide = NULL)+
+  facet_wrap(~nicenames, scales = "free_y", strip.position = "left", nrow = 6)+
+  facetted_pos_scales(
+    y = rep(list(
+      scale_y_continuous(limits=c(6, 25)),
+      scale_y_continuous(limits=c(0, 30)),
+      scale_y_continuous(limits=c(0, 16)),
+      scale_y_continuous(limits = c(0.8, 1.2)),
+      scale_y_continuous(limits=c(0.9, 1.4)),
+      scale_y_continuous(limits = c(0, 1000))
+    ), each = 1))+
+  labs(x = "",
+       y = "",
+       color = "",
+       title =  "After Control \n (August upwelling)"
+  )+
+  scale_color_manual(values = c("grey30","#79ACBD","#567d46"))+
+  theme_bw()+
+  theme(strip.background = element_blank(),
+        strip.placement = "outside",
+        strip.text.y.left = element_markdown(size = 14),
+        strip.text = element_blank(),
+        axis.text = element_text(size = 12),
+        axis.text.x = element_text(face = "bold"),
+        axis.title = element_text(size = 14, face = "bold"),
+        legend.position = "bottom",
+        legend.text = element_text(size = 14), 
+        plot.title = element_text(hjust = 0.5, size = 14)
+  )
+
+
+
+
+P_Aug_impact<-data_long %>%
+  filter(name %in% c("do_mg_l","nn_umol_l","nh4_umol_l","heterotrophic_bacterioplankton_m_l","bix","m_c"))%>%
+  mutate(foundation_spp = case_when( foundation_spp == "Ocean"~ "Ocean",
+                                     foundation_spp == "Mytilus" ~ "Mussels",
+                                     foundation_spp == "Phyllospadix" ~"Surfgrass")) %>%
+  filter(month != "July",
+         manipulated != "Not Manipulated"
+  )  %>% bind_rows( # add back the ocean
+    data_long %>%
+      filter(name %in% c("do_mg_l","nn_umol_l","nh4_umol_l","heterotrophic_bacterioplankton_m_l","bix","m_c")) %>%
+      filter(foundation_spp == "Ocean",
+             month != "July")
+  ) %>%
+  mutate(linetype = ifelse(foundation_spp == "Ocean", "dashed","solid"))%>% # make different lines%>%
+  ggplot(aes(x = time_point_clean, y = mean_val, color = foundation_spp, 
+             group = foundation_spp, lty = linetype)
+  )+
+  geom_point(size = 3)+
+  geom_line()+
+  geom_errorbar(aes(x = time_point_clean, ymin = mean_val - se_val, ymax = mean_val+se_val), width = 0.1, linetype = "solid")+
+  scale_linetype_identity(guide = NULL)+
+  facet_wrap(~nicenames, scales = "free_y", strip.position = "left", nrow = 6)+
+  facetted_pos_scales(
+    y = rep(list(
+      scale_y_continuous(limits=c(6, 25)),
+      scale_y_continuous(limits=c(0, 30)),
+      scale_y_continuous(limits=c(0, 16)),
+      scale_y_continuous(limits = c(0.8, 1.2)),
+      scale_y_continuous(limits=c(0.9, 1.4)),
+      scale_y_continuous(limits = c(0, 1000))
+    ), each = 1))+
+  labs(x = "",
+       y = "",
+       color = "",
+       title =  "After Impact \n (August upwelling)"
+  )+
+  scale_color_manual(values = c("grey30","#79ACBD","#567d46"))+
+  theme_bw()+
+  theme(strip.background = element_blank(),
+        strip.placement = "outside",
+        strip.text.y.left = element_markdown(size = 14),
+        strip.text = element_blank(),
+        axis.text = element_text(size = 12),
+        axis.text.x = element_text(face = "bold"),
+        axis.title = element_text(size = 14, face = "bold"),
+        legend.position = "bottom",
+        legend.text = element_text(size = 14), 
+        plot.title = element_text(hjust = 0.5, size = 14)
+  )
+
+(P_July|P_Aug_control|P_Aug_impact)+plot_layout(guides = "collect")&theme(legend.position = "bottom")
+ggsave(here("Output","Supp_Fig_1.pdf"), width = 10, height = 12)
