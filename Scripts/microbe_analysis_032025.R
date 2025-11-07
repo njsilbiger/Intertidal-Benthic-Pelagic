@@ -267,7 +267,6 @@ values<-data_all %>%
   filter(name %in% c("nn_umol_l","heterotrophic_bacterioplankton_m_l","nh4_umol_l", "do_mg_l","m_c","bix","hix", "tyrosine_like", "tryptophan_like", "phenylalanine_like", 
                      "ultra_violet_humic_like", "visible_humic_like", "marine_humic_like") )%>%
   group_by(foundation_spp, name)%>%
-#   mutate(value_scale = as.numeric(scale(mean_val_sqrt, scale = TRUE,center = TRUE))) %>%
   mutate(value_scale = as.numeric(scale(mean_val_sqrt, scale = TRUE,center = TRUE))) %>%
   ungroup()%>%
   mutate(nicenames = case_when(
@@ -495,7 +494,6 @@ mods<-Rates %>%
 
 r1<-mods%>%
   unnest(tidy)%>%
- # filter(!name %in% c("hix","do_mg_l"))%>%
   filter(
     term != "(Intercept)",
    ) %>%
@@ -525,98 +523,7 @@ write_csv(mods%>%
             unnest(tidy), here("Output","Rates_controlonlymods.csv"))
 
 
-
-
-Benthic_all<-BenthicData %>%
-  select(pool_id = PoolID, Foundation_spp:Before_After, MusselCover, SurfgrassCover) %>%
-  rename(foundation_spp = Foundation_spp, before_after = Before_After, removal_control = Removal_Control)%>%
-  mutate(pool_id = as.character(pool_id),
-         MusselCover = ifelse(is.na(MusselCover),0,MusselCover),
-         SurfgrassCover = ifelse(is.na(SurfgrassCover),0,SurfgrassCover))%>%
-  pivot_wider(names_from = before_after,
-              values_from = c(MusselCover,SurfgrassCover)) %>%
-  mutate(mussel_change = MusselCover_After - MusselCover_Before, # difference in cover from removal
-         surfgrass_change = SurfgrassCover_After - SurfgrassCover_Before) 
- 
-Benthic_long<-Benthic_all %>%
-  filter(foundation_spp == "Phyllospadix",
-         removal_control == "Control") %>%
-  select(pool_id:removal_control, cover_change_adj = SurfgrassCover_Before)%>%
-  mutate(before_after = "Before") %>%
-  bind_rows(
-    Benthic_all %>%
-      filter(foundation_spp == "Phyllospadix",
-             removal_control == "Control") %>%
-      select(pool_id:removal_control, cover_change_adj = SurfgrassCover_After)%>%
-      mutate(before_after = "After") 
-  ) %>%
-  bind_rows(
-    Benthic_all %>%
-      filter(foundation_spp == "Phyllospadix",
-             removal_control == "Removal") %>%
-      select(pool_id:removal_control, cover_change_adj = SurfgrassCover_Before)%>%
-      mutate(before_after = "Before")
-  ) %>%
-  bind_rows(
-    Benthic_all %>%
-      filter(foundation_spp == "Phyllospadix",
-             removal_control == "Removal") %>%
-      select(pool_id:removal_control, cover_change_adj = surfgrass_change)%>%
-      mutate(before_after = "After")
-  ) %>%
-  
-  bind_rows(Benthic_all %>%
-            filter(foundation_spp == "Mytilus",
-                   removal_control == "Control") %>%
-            select(pool_id:removal_control, cover_change_adj = MusselCover_Before)%>%
-            mutate(before_after = "Before")) %>%
-        bind_rows(
-              Benthic_all %>%
-                filter(foundation_spp == "Mytilus",
-                       removal_control == "Control") %>%
-                select(pool_id:removal_control, cover_change_adj = MusselCover_After)%>%
-                mutate(before_after = "After") 
-            ) %>%
-            bind_rows(
-              Benthic_all %>%
-                filter(foundation_spp == "Mytilus",
-                       removal_control == "Removal") %>%
-                select(pool_id:removal_control, cover_change_adj = MusselCover_Before)%>%
-                mutate(before_after = "Before")
-            ) %>%
-            bind_rows(
-              Benthic_all %>%
-                filter(foundation_spp == "Mytilus",
-                       removal_control == "Removal") %>%
-                select(pool_id:removal_control, cover_change_adj = mussel_change)%>%
-                mutate(before_after = "After")
-            )
-
-# add in the diatoms
-Benthic_long <-Benthic_long %>% left_join(
-BenthicData%>% 
-  select(pool_id = PoolID, Foundation_spp:Before_After, Diatoms) %>%
-  mutate(pool_id = as.character(pool_id))%>%
-  rename(foundation_spp = Foundation_spp, before_after = Before_After, removal_control = Removal_Control)
-)  
-
-
-
-data_all %>%
-  ungroup() %>%
-  select(before_after, month,pool_id, time_point,removal_control, foundation_spp,do_mg_l,heterotrophic_bacterioplankton_m_l,m_c, bix, nn_umol_l, nh4_umol_l) %>%
-  pivot_longer(cols = do_mg_l:nh4_umol_l) %>%
-  group_by(foundation_spp, pool_id,removal_control,name, before_after) %>%
-  summarise(mean_val = mean(value, na.rm = TRUE))%>%
-  mutate(mean_val_sqrt = sqrt(mean_val))%>%
-  filter(name %in% c("nn_umol_l","nh4_umol_l") )%>%
-  mutate(together = paste(before_after, removal_control),
-         manipulated = ifelse(together == "After Removal","Manipulated", "Not Manipulated")) %>%
-  group_by(name, foundation_spp, manipulated, before_after) %>%
-  summarise(means = mean(mean_val, na.rm = TRUE))
-  
-
-### test cover as a covariate
+### Make a long dataframe to get ready for models
 Long_all<-Rates %>% 
   filter(
          foundation_spp != "Ocean",
@@ -625,7 +532,6 @@ Long_all<-Rates %>%
                      "tyrosine_like", "ultra_violet_humic_like", "visible_humic_like"))%>%
   mutate(together = paste(before_after, removal_control),
          manipulated = ifelse(together == "After Removal","Manipulated", "Not Manipulated"))%>%
-  left_join(Benthic_long) %>%
   mutate(rate_sqrt = sign(rate_m2_hr)*sqrt(abs(rate_m2_hr)),
          rate_log = sign(rate_m2_hr)*log(abs(rate_m2_hr)))
 
@@ -664,10 +570,7 @@ Rates_wide %>%
   ggplot(aes(y = het_carbon, x = do_mg_l))+
   geom_hline(aes(yintercept  = 0), lty = 2, alpha = 0.5)+
   geom_vline(aes(xintercept  = 0), lty = 2, alpha = 0.5)+
-  #geom_point(aes(color = foundation_spp, shape = month))+
   geom_point(aes(color = foundation_spp))+
-  # geom_text(aes(x = 175, y = 0.1, label = "p = 0.036"))+
-  #  ylim(-.3,.3)+
   geom_smooth(method ="lm", color = "grey3", data = Rates_wide %>%  
                 mutate(het_carbon = heterotrophic_bacterioplankton_m_l*20/1e6) %>%
                 mutate(removal = case_when(removal_control == "Control"~"Unmanipulated",
@@ -682,7 +585,6 @@ Rates_wide %>%
   #scale_shape_manual(values = c(1,16))+
   labs(y = "Heterotrophic bacteria <br> (nmol  C  m<sup>-2</sup> hr<sup>-1</sup>)",
        x = "Dissolved oxygen flux <br> (mg m<sup>-2</sup> hr<sup>-1</sup>)",
-       #shape = "Sampling Month",
        color = " Foundation Species")+
   facet_wrap(~removal, scales = "free_x")+
   theme_bw()+
@@ -718,7 +620,7 @@ data_all %>%
   summarise(mean_temp = mean(temp_pool, na.rm = TRUE),
             se_temp = sd(temp_pool)/sqrt(n()))
 
-## explore this and run one-way t-tests
+## run one-way t-tests
 Rates_ttest <- Long_all %>%
   group_by(name,foundation_spp, manipulated, before_after)%>%
   nest() %>%
@@ -731,7 +633,6 @@ Rates_ttest <- Long_all %>%
     tidy = map(model, tidy),
     glance = map(model, glance)
   )  %>% 
-  filter(name != "total_fDOM")%>%
   unnest(tidy) %>%
   select(-c(data, model, glance, method, alternative)) %>%
   ungroup()%>%
@@ -740,7 +641,7 @@ Rates_ttest <- Long_all %>%
   arrange(foundation_spp, before_after) %>%
   select(before_after:manipulated, estimate, statistic, p.value, significant) 
 
-
+# write the t-test output
   write_csv(Rates_ttest, here("Output","ttest_rates.csv"))
 
   # Look at all the individual fDOM values
@@ -812,7 +713,6 @@ Long_wfDOM %>%
               select(before_after, foundation_spp, name, manipulated, significant))%>%
 ggplot(aes(x= rate_m2_hr, y = before_after, shape = man, color = foundation_spp))+
   geom_vline(xintercept = 0,  lty = 2)+
- # geom_point(alpha = 0.1)+
   stat_summary(size = 0.8, fun.data = "mean_se")+
   scale_shape_manual(values = c(21,19))+
   scale_color_manual(values = c("black","#34c230"), guide = "none")+
@@ -830,9 +730,6 @@ ggplot(aes(x= rate_m2_hr, y = before_after, shape = man, color = foundation_spp)
         axis.text = element_text(size = 10),
         axis.title = element_text(size=12))+
   scale_x
-
-ggsave(filename = here("Output","RawFlux.pdf"), height = 12, 
-       width = 6, device = cairo_pdf)
 
 ## cobble params for the supplement
 
@@ -860,9 +757,6 @@ Long_wfDOM %>%
         axis.text = element_text(size = 10),
         axis.title = element_text(size=12))+
   scale_x
-
-ggsave(filename = here("Output","RawFlux_fDOM.pdf"), height = 12, 
-       width = 6, device = cairo_pdf)
 
 ## same for the values
 
@@ -905,7 +799,7 @@ ocean <-data_all %>%
   )))%>%
   mutate(removal = "Ocean")
 
-
+## Plot all the values
 value_plotdata<-values %>%
   mutate(removal = case_when(removal_control == "Control"~"Unmanipulated",
                              removal_control == "Removal"& month == "July" ~ "Unmanipulated",
@@ -996,8 +890,6 @@ stocksplot<-value_plotdata %>%
         legend.text = element_text(size = 10))+
   scale_x2
 
-ggsave(filename = here("Output","Rawvalue.pdf"), height = 12, width = 6, device = cairo_pdf)
-
 
 #######
 ## Make a plot of the benthic data
@@ -1070,7 +962,7 @@ Value_rates<-values %>%
   mutate(manipulated = ifelse(month == "July", "Control", removal_control))
 
 
-#### Add in the paper figures for rates and stocksusing the raw darta 
+#### Add in the paper figures for rates and stocks using the raw data 
 
 scale_y2 <- Long_wfDOM %>%
   filter(name %in% c("heterotrophic_bacterioplankton_m_l",
