@@ -19,12 +19,12 @@ Abstract: Benthic–pelagic coupling, the reciprocal exchange of materials betwe
  ### Contents
  
  *Scripts*
- - microbe_analysis_032025.R
+ - microbe_analysis_032025.R  
  *Data*
  - CommunityData.csv (Benthic community composition data)
  - CUTI.csv (Coastal Upwelling Transport Index data)
  - JointedChemData.csv (All the chemistry data used in this analysis)
- - TidePollDescriptions.csv (Metadata on the tide pools)
+ - TidePollDescriptions.csv (Metadata on the tide pools)  
  *Output*
  - Figures and model outputs used within the paper
  
