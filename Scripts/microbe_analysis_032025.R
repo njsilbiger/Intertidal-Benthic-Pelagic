@@ -76,7 +76,7 @@ CT %>%
              color = "red")+
   geom_path()+
   labs(x = "",
-       y = "Coastal Upwelling Transport Index (m<sup>2</sup> s<sup>-1</sup>)")+
+       y = "Coastal Upwelling Transport Index <br> (m<sup>2</sup> s<sup>-1</sup>)")+
   coord_flip()+
   scale_x_continuous(trans = c("date", "reverse2"))+
   theme_bw()+
@@ -84,7 +84,7 @@ CT %>%
         axis.text = element_text(size = 12),
         panel.grid = element_blank())
  
-ggsave(here("Output","CUTI.pdf"), height = 8, width = 6)
+ggsave(here("Output","Figure_1b.pdf"), height = 8, width = 6)
 
 
 
@@ -358,7 +358,6 @@ r_int<-r2 %>%
   geom_vline(xintercept=0)+
   labs(x = "Standardized effect size <br> (rates m<sup>-2</sup> hr<sup>-1</sup>)",
        y = "")+
-  #facet_wrap(~foundation_spp, scale = "free_y", ncol = 1)+
   theme_bw()+
   theme(strip.background = element_blank(),
         strip.text = element_text(size = 14, face = "bold"),
@@ -368,7 +367,6 @@ r_int<-r2 %>%
         legend.position = "none")
 
 BC_int<-r_int|con_int
-#ggsave(here("Output","BACIEffects_interaction.pdf"), width = 8, height = 8, device = cairo_pdf)
 
 # To get the upwelling effect we cal only look at the unmanipulated pools 
 ## do a two-way ANOVA between month and foundation species to see effect of upwelling and species identity
@@ -1045,7 +1043,7 @@ BenthicData %>%
   )+
   facet_grid(Before_After~Foundation_spp, scale = "free_x")
 
-ggsave(here("Output","BenthicCover.pdf"), width = 10, height = 8, device = cairo_pdf)
+ggsave(here("Output","Figure_1c.pdf"), width = 10, height = 8, device = cairo_pdf)
 
 
 
