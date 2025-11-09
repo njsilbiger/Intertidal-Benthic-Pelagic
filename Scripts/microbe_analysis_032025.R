@@ -1374,3 +1374,55 @@ P_Aug_impact<-data_long %>%
 
 (P_July|P_Aug_control|P_Aug_impact)+plot_layout(guides = "collect")&theme(legend.position = "bottom")
 ggsave(here("Output","Supp_Fig_1.pdf"), width = 10, height = 12)
+
+### Does pool size affect any of the results
+Long_all%>% 
+  filter(foundation_spp != "Ocean")%>%
+  mutate(removal = case_when(removal_control == "Control"~"Unmanipulated",
+                             removal_control == "Removal"& before_after == "Before" ~ "Unmanipulated",
+                             removal_control == "Removal"& before_after != "Before" ~ "Foundation spp. removed"))%>%
+  mutate(removal = factor(removal, levels = c("Unmanipulated","Foundation spp. removed"))) %>%
+  filter(name %in% c("bix","do_mg_l","heterotrophic_bacterioplankton_m_l","m_c","nh4_umol_l","nn_umol_l")) %>%
+  group_by(name)%>%
+  nest() %>%
+  mutate(model = map(data, 
+                     function(df) {
+                       lm(rate_sqrt  ~ foundation_spp*before_after + vol, #sqrt transformed
+                          data = df)
+                     })) %>%
+  
+  mutate(
+    tidy = map(model, function(x)tidy(x,effects="fixed")),
+    glance = map(model, glance)
+  )  %>%
+  unnest(tidy) %>%
+  select(name, term,p.value) %>%
+  ungroup() %>%
+  filter(term == "vol")
+
+values %>% 
+  mutate(before_after = ifelse(month == "July","Before","After"))%>%
+  left_join(MetaData %>%
+              clean_names()%>%
+              mutate(pool_id = as.character(pool_id))) %>%
+  #filter(name == "m_c")%>%
+  mutate(mean_val = ifelse(name == "m_c" & mean_val >2, NA, mean_val)) %>%
+#  filter(mean_val<2)%>%
+  ggplot(aes(x = surface_area, y = mean_val))+
+  geom_point()+
+  facet_wrap(name+before_after~foundation_spp, scales = "free")
+  
+
+MetaData %>%
+  filter(Before_After == "Before") %>%
+  ggplot(aes(x = Foundation_spp, y = SurfaceArea))+
+  geom_point(alpha = 0.25)+
+  stat_summary(size =1)+
+  labs(x = "",
+       y = "Surface Area (m<sup>2)")+
+  facet_wrap(~Removal_Control)+
+  theme_minimal()+
+  theme(axis.title.y = element_markdown(size = 14),
+        axis.text = element_text(size = 12),
+        strip.text = element_text(size = 14))
+ggsave(here("Output","Supp_Fig2.pdf"), width = 5, height = 5)
