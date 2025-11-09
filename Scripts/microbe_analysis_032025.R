@@ -1383,11 +1383,11 @@ Long_all%>%
                              removal_control == "Removal"& before_after != "Before" ~ "Foundation spp. removed"))%>%
   mutate(removal = factor(removal, levels = c("Unmanipulated","Foundation spp. removed"))) %>%
   filter(name %in% c("bix","do_mg_l","heterotrophic_bacterioplankton_m_l","m_c","nh4_umol_l","nn_umol_l")) %>%
-  group_by(name)%>%
+  group_by(name, foundation_spp, removal)%>%
   nest() %>%
   mutate(model = map(data, 
                      function(df) {
-                       lm(rate_sqrt  ~ foundation_spp*before_after + vol, #sqrt transformed
+                       lm(rate_sqrt  ~ surface_area, #sqrt transformed
                           data = df)
                      })) %>%
   
@@ -1396,22 +1396,11 @@ Long_all%>%
     glance = map(model, glance)
   )  %>%
   unnest(tidy) %>%
-  select(name, term,p.value) %>%
+  select(name, term, statistic,p.value) %>%
   ungroup() %>%
-  filter(term == "vol")
+  filter(term == "surface_area") %>%
+  filter(p.value < 0.05) # unmanipulated mussel M_C is the only significant
 
-values %>% 
-  mutate(before_after = ifelse(month == "July","Before","After"))%>%
-  left_join(MetaData %>%
-              clean_names()%>%
-              mutate(pool_id = as.character(pool_id))) %>%
-  #filter(name == "m_c")%>%
-  mutate(mean_val = ifelse(name == "m_c" & mean_val >2, NA, mean_val)) %>%
-#  filter(mean_val<2)%>%
-  ggplot(aes(x = surface_area, y = mean_val))+
-  geom_point()+
-  facet_wrap(name+before_after~foundation_spp, scales = "free")
-  
 
 MetaData %>%
   filter(Before_After == "Before") %>%
