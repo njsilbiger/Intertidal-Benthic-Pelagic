@@ -2,8 +2,6 @@
 ## Data Collected in Coastal Oregon ##
 ### Code developed by Nyssa Silbiger ###
 
-### change umol to mmol and mg to gram and fix the fmol C 
-
 ### Load libraries   
 
 library(here)
@@ -92,26 +90,8 @@ ggsave(here("Output","Figure_1b.pdf"), height = 8, width = 6)
 data_all<-data_all %>%
   mutate(nh4_umol_l = ifelse(nh4_umol_l>60, NA, nh4_umol_l)) %>% # drop the 2 crazy outliers
   mutate(time_point = factor(time_point, levels = c("start","end")),
-         do_umol_l = do_mg_l/0.032) #%>% # covert to micromol using 32 g/mol conversion
-  #  filter(sampling_day !=ymd("2019-07-11"), time_point != 5)%>%
-  #group_by(before_after, time_point, day_night, sampling_group)%>%
-  #mutate(do_change = do_mg_l - do_mg_l[foundation_spp == "Ocean"],
-  #       temp_change = temp_pool - temp_pool[foundation_spp == "Ocean"],
-  #       nn_change = nn_umol_l - nn_umol_l[foundation_spp == "Ocean"],
-  #       nh4_change = nh4_umol_l - nh4_umol_l[foundation_spp == "Ocean"],
-  #       hetero_change = heterotrophic_bacterioplankton_m_l - heterotrophic_bacterioplankton_m_l[foundation_spp == "Ocean"],
-  #       mc_change = m_c - m_c[foundation_spp == "Ocean"],
-  #       bix_change = bix - bix[foundation_spp == "Ocean"],
-  #       hix_change = hix - hix[foundation_spp == "Ocean"],
-  #       fi_change = fi - fi[foundation_spp == "Ocean"],
-  #       uv_humic_change = ultra_violet_humic_like - ultra_violet_humic_like[foundation_spp == "Ocean"],
-  #       marine_change = marine_humic_like - marine_humic_like[foundation_spp == "Ocean"],
-  #       visible_change = visible_humic_like - visible_humic_like[foundation_spp == "Ocean"],
-  #       trypto_change = tryptophan_like - tryptophan_like[foundation_spp == "Ocean"],
-  #       tyrosine_change = tyrosine_like - tyrosine_like[foundation_spp == "Ocean"],
-  #       phenyl_change = phenylalanine_like - phenylalanine_like[foundation_spp == "Ocean"]
-  #) 
-
+         do_umol_l = do_mg_l/0.032) # covert to micromol using 32 g/mol conversion
+ 
 
 ## add in the metadata
 data_all<-data_all %>%
@@ -125,8 +105,6 @@ data_long<-data_all %>%
   ungroup()%>%
   mutate(together = paste(before_after, removal_control),
          manipulated = ifelse(together == "After Removal","Manipulated", "Not Manipulated"))%>%
-  
-  #filter(removal_control != "Removal") %>%
   select(month, pool_id,day_night, time_point,removal_control, manipulated,foundation_spp,do_umol_l,heterotrophic_bacterioplankton_m_l,tyrosine_like,tryptophan_like, phenylalanine_like, ultra_violet_humic_like, visible_humic_like, marine_humic_like, bix, hix, m_c, nn_umol_l, nh4_umol_l) %>%
   pivot_longer(cols = c(do_umol_l:nh4_umol_l)) %>%
   group_by(month, name, foundation_spp,time_point, day_night, manipulated)%>%
@@ -134,7 +112,6 @@ data_long<-data_all %>%
             se_val= sd(value, na.rm = TRUE)/sqrt(n())) %>%
   mutate(time_point_clean = ifelse(time_point == "start","Early", "Late"))%>%
   mutate(nicenames = case_when(  ## make pretty names for plotting
-  #  name == "do_mg_l" ~ "DO <br> (mg L<sup>-1</sup>)",
     name == "do_umol_l" ~ "DO <br> (&mu;mol L<sup>-1</sup>)",
     name == "heterotrophic_bacterioplankton_m_l" ~ "Heterotrophic <br> (cells &mu;L<sup>-1</sup>)",
     name == "nh4_umol_l" ~ "Ammonium <br> (&mu;mol L<sup>-1</sup>)",
@@ -166,8 +143,6 @@ data_long<-data_all %>%
   )))
 
 
-
-
 ### create a function that calculated difference between start and end values for each tide pool
 
 change_val<-function(x, time){
@@ -192,7 +167,7 @@ Rates<-data_all%>%
          ultra_violet_humic_like,visible_humic_like,marine_humic_like) %>%
   mutate(heterotrophic_bacterioplankton_m_l = heterotrophic_bacterioplankton_m_l *1e6 # convert to per L from microL       
   )%>%
-  mutate_at(vars(do_umol_l:nh4_umol_l), .funs = function(x){x/1000}) %>% #convert to mmol and g for chem
+  mutate_at(vars(do_umol_l:nh4_umol_l), .funs = function(x){x/1000}) %>% #convert to mmol for chem
   pivot_longer(cols = do_umol_l:marine_humic_like)%>%
   group_by(pool_id, before_after, removal_control,foundation_spp, sampling_group, name) %>%
   reframe(change = change_val(value, time_point)) %>% # calculate the difference between start and end
@@ -211,7 +186,6 @@ mods_BACI<-Rates %>%
          removal_control != "Ocean")%>%
   filter(name %in% c("nn_umol_l","heterotrophic_bacterioplankton_m_l","nh4_umol_l", "m_c","bix","do_umol_l") )%>%
   mutate(rate_m2_hr_sqrt = sign(rate_m2_hr)*sqrt(abs(rate_m2_hr)), # sqrt transform the data
-         #rate_m2_hr_log = sign(rate_m2_hr)*log(abs(rate_m2_hr))
          )%>%
   group_by(foundation_spp, name)%>%
   mutate(rate_diff_scale = as.numeric(scale(rate_m2_hr_sqrt, scale = TRUE,center = TRUE)) # z-score the data
@@ -425,7 +399,6 @@ mods3<-Unmamipulated_mean %>%
 
 conc1<-mods3%>%
   unnest(tidy)%>%
-  #filter(!nicenames %in% c("HIX",NA))%>%
   filter(
     term != "(Intercept)",
   ) %>%
@@ -588,7 +561,6 @@ Rates_wide %>%
   geom_text(data = annotations, aes(x = x_pos, y = y_pos, label = label), 
             hjust = 0, vjust = 1, size = 5)+
   scale_color_manual(values = c("black","#34c230"))+
-  #scale_shape_manual(values = c(1,16))+
   labs(y = "Heterotrophic bacteria <br> (mmol  C  m<sup>-2</sup> hr<sup>-1</sup>)",
        x = "Dissolved oxygen flux <br> (mmol m<sup>-2</sup> hr<sup>-1</sup>)",
        color = " Foundation Species")+
@@ -711,60 +683,6 @@ scale_x <- Long_wfDOM %>%
     )
   )
 
-# plot the rates
-#Long_wfDOM %>%
-#  filter(name %in% c("do_umol_l","heterotrophic_bacterioplankton_m_l",
-#                     "nh4_umol_l","nn_umol_l","bix", "hix","m_c" )) %>%
-#  left_join(Rates_ttest %>%
-#              select(before_after, foundation_spp, name, manipulated, significant))%>%
-#ggplot(aes(x= rate_m2_hr, y = before_after, shape = man, color = foundation_spp))+
-#  geom_vline(xintercept = 0,  lty = 2)+
-#  stat_summary(size = 0.8, fun.data = "mean_se")+
-#  scale_shape_manual(values = c(21,19))+
-#  scale_color_manual(values = c("black","#34c230"), guide = "none")+
-#  labs(x = "Flux (m<sup>-2</sup> hr<sup>-1</sup>)", 
-#       y = "",
-#       shape = "")+
-#  ggh4x::facet_grid2(nicenames~foundation_spp,scales = "free_x", independent = "x")+
-#  theme_bw()+
-#  theme(strip.background = element_blank(),
-#        strip.placement = "outside", 
-#        panel.grid.minor = element_blank(),
-#        strip.text = element_markdown(size = 12),
-#        axis.title.x = element_markdown(),
-#        legend.position = "bottom", 
-#        axis.text = element_text(size = 10),
-#        axis.title = element_text(size=12))+
-#  scale_x
-
-## cobble params for the supplement
-
-#Long_wfDOM %>%
-#  filter(name %in% c("tyrosine_like" , "tryptophan_like",
-#                     "phenylalanine_like","ultra_violet_humic_like",
-#                     "visible_humic_like", "marine_humic_like" )) %>%
-#  ggplot(aes(x= rate_m2_hr, y = before_after, shape = man, color = foundation_spp))+
-#  geom_vline(xintercept = 0,  lty = 2)+
-#  # geom_point(alpha = 0.1)+
-#  stat_summary(size = 0.8, fun.data = "mean_se")+
-#  scale_shape_manual(values = c(21,19))+
-#  scale_color_manual(values = c("black","#34c230"), guide = "none")+
-#  labs(x = "Flux (m<sup>-2</sup> hr<sup>-1</sup>)", 
-#       y = "",
-#       shape = "")+
-#  ggh4x::facet_grid2(nicenames~foundation_spp,scales = "free_x", independent = "x")+
-#  theme_bw()+
-#  theme(strip.background = element_blank(),
-#        strip.placement = "outside", 
-#        panel.grid.minor = element_blank(),
-#        strip.text.y.right = element_markdown(size = 12),
-#        axis.title.x = element_markdown(),
-#        legend.position = "bottom", 
-#        axis.text = element_text(size = 10),
-#        axis.title = element_text(size=12))+
-#  scale_x
-
-## same for the values
 
 # get the ocean values
 ocean <-data_all %>%
@@ -830,59 +748,6 @@ value_plotdata<-values %>%
   )))
 
 
-scale_x2 <- value_plotdata %>%
-  ungroup()%>%
-  group_by(foundation_spp, nicenames, before_after, removal)%>%
-  summarise(mean_r = mean(mean_val , na.rm = TRUE),
-            se_r = sd(mean_val , na.rm = TRUE)/sqrt(n())) %>%
-  mutate(max = mean_r+se_r,
-         min = mean_r - se_r) %>%
-  select(foundation_spp, nicenames, max, min) %>%
-  pivot_longer(cols = max:min) %>%
-  rename(mean_val = value) %>%
-  bind_rows(tibble(nicenames = "Ammonium <br> (&mu;mol L<sup>-1</sup>)", mean_val = 0)) %>%
-  bind_rows(ocean %>% select(before_after, nicenames, mean_val = value)) %>%
-  split(~nicenames) |>
-  map(~range(.x$mean_val )) |> 
-  imap(
-    ~ scale_x_facet(
-      nicenames == .y,
-      limits = .x
-    )
-  )
-
-#stocksplot<-value_plotdata %>%
-#  filter(name %in% c("do_umol_l","heterotrophic_bacterioplankton_m_l",
-#                     "nh4_umol_l","nn_umol_l","bix", "m_c" )) %>%
-#  mutate(removal = factor(removal, levels = c("Foundation species removed", "Unmanipulated")),
-#         foundation_spp = ifelse(foundation_spp == "Mussels", "Mussel-Dominated", "Surfgrass-Dominated"))%>%
-#  ggplot(aes(x= mean_val, y = before_after, shape = removal))+
-#  #geom_vline(xintercept = 0, color = "grey")+
-#  geom_point(alpha = 0.1)+
-#  stat_summary(size = 0.8, aes(color = foundation_spp))+
-#  geom_point(data = ocean %>%
-#               filter(name %in% c("do_umol_l","heterotrophic_bacterioplankton_m_l",
-#                                  "nh4_umol_l","nn_umol_l","bix", "m_c" )), aes(x= value, y = before_after), 
-#             color = "lightblue", size = 3)+
-#  scale_shape_manual(values = c(21,19,18))+
-#  scale_color_manual(values = c("black","#34c230"), guide = "none")+
-#  labs(x = "Stock", 
-#       y = "",
-#       shape = "")+
-#  ggh4x::facet_grid2(nicenames~foundation_spp, scales = "free_x", independent = "x")+
-#  theme_bw()+
-#  theme(strip.background = element_blank(),
-#        strip.placement = "outside", 
-#        panel.grid.minor = element_blank(),
-#        strip.text = element_markdown(size = 12),
-#        axis.title.x = element_markdown(),
-#        legend.position = "bottom", 
-#        axis.text = element_text(size = 10),
-#        axis.title = element_text(size=12),
-#        legend.text = element_text(size = 10))+
-#  scale_x2
-
-
 #######
 ## Make a plot of the benthic data
 
@@ -895,7 +760,6 @@ PoolOrder<-as_tibble(list(PoolOrder = c(1:32),
 
 
 BenthicData %>%
-  # filter(Before_After == "After")%>%
   mutate(Before_After = factor(Before_After, levels = c("Before","After")))%>%
   select(PoolID, Before_After, Removal_Control, Foundation_spp, Macroalgae = macroalgae , Microphytobenthos = Diatoms, `Non-mussel Consumers` = consumers, `Crustose Coralline Algae` = allCCA, Mussels = AdjMusselCover, Surfgrass = AdjSurfgrassCover)%>%
   mutate(PoolID =  as.factor(PoolID)) %>%
@@ -930,7 +794,6 @@ BenthicData %>%
 ggsave(here("Output","Figure_1c.pdf"), width = 10, height = 8, device = cairo_pdf)
 
 BenthicData %>%
-  # filter(Before_After == "After")%>%
   mutate(Before_After = factor(Before_After, levels = c("Before","After")))%>%
   select(PoolID, Before_After, Removal_Control, Foundation_spp, Macroalgae = macroalgae , Microphytobenthos = Diatoms, `Non-mussel Consumers` = consumers, `Crustose Coralline Algae` = allCCA, Mussels = AdjMusselCover, Surfgrass = AdjSurfgrassCover)%>%
   mutate(PoolID =  as.factor(PoolID)) %>%
@@ -942,15 +805,6 @@ mutate(Removal_Control = ifelse(Before_After == "Before", "Control", Removal_Con
  group_by(Foundation_spp, Removal_Control, Before_After, name) %>%
   summarise(mean_cover = mean(value, na.rm = TRUE),
             se_cover = sd(value, na.rm = TRUE)/sqrt(n()))
-
-
-Value_rates<-values %>%
-  select(foundation_spp:month, mean_val, name) %>%
-  pivot_wider(names_from = name, values_from = mean_val, names_prefix = "value_")%>%
-  mutate(value_total_fDOM = value_marine_humic_like+value_phenylalanine_like+value_tryptophan_like+value_tyrosine_like+value_ultra_violet_humic_like+value_visible_humic_like)%>%
-  left_join(Rates_wide) %>%
-  mutate(manipulated = ifelse(month == "July", "Control", removal_control))
-
 
 #### Add in the paper figures for rates and stocks using the raw data 
 
@@ -1011,17 +865,13 @@ rate_mean_plot<-Long_wfDOM %>%
   filter(name %in% c("do_umol_l","bix","heterotrophic_bacterioplankton_m_l","m_c","nh4_umol_l","nn_umol_l")) %>%
   ggplot(aes(shape = removal_control, y = rate_m2_hr, color = foundation_spp, x = foundation_spp))+
   geom_hline(yintercept = 0, lty = 2)+
- # geom_violin(aes(fill = foundation_spp), alpha = 0.3, color = NA)+
   stat_summary(size = 0.7)+
   scale_color_manual(values = c("black","#34c230"), guide = "none")+
   labs(x = "", 
-      # y = expression("Rate (value m"^-2~"hr"^-1~")"),
        y = "",
        shape = "")+
   scale_shape_manual (values = c(16,1))+
   facet_wrap(~nicenames2, scales = "free_y",nrow = 1, strip.position = "left")+
-  
-  #ggh4x::facet_grid2(nicenames2~foundation_spp, scales = "free_y", independent = "y", switch = "y")+
   theme_bw()+
   theme(strip.background = element_blank(),
         strip.placement = "outside", 
@@ -1033,8 +883,7 @@ rate_mean_plot<-Long_wfDOM %>%
         axis.title = element_text(size=12),
         legend.text = element_text(size = 10),
         aspect.ratio = 1)
- # scale_y2
-
+ 
 
 ### same with stocks for just the after period
 scale_y4 <- value_plotdata %>%
@@ -1073,7 +922,6 @@ value_mean_plot<-value_plotdata %>%
   scale_color_manual(values = c("black","#34c230"), guide = "none")+
   scale_shape_manual (values = c(16,1))+
   labs(x = "", 
-       # y = expression("Rate (value m"^-2~"hr"^-1~")"),
        y = "",
        shape = "")+
   facet_wrap(~nicenames, scales = "free_y",nrow = 1, strip.position = "left")+
@@ -1088,7 +936,6 @@ value_mean_plot<-value_plotdata %>%
         axis.title = element_text(size=12),
         legend.text = element_text(size = 10),
         aspect.ratio = 1)
-  #scale_y4
 
 
 Fig4<-((rate_mean_plot&theme(legend.position = "none", axis.text.x = element_blank()))+r_int+theme(aspect.ratio = 1, axis.title.x = element_blank()) +plot_layout(nrow = 1, widths = c(8,1)))/((value_mean_plot&theme(legend.position = "none"))+con_int+theme(aspect.ratio = 1, axis.title.x = element_blank()) +plot_layout(nrow = 1, widths = c(8,1)))
@@ -1209,12 +1056,9 @@ scale_y3 <- value_plotdata %>%
    ggplot(aes(x = foundation_spp, y = rate_m2_hr))+
    geom_hline(yintercept = 0, lty = 2)+
    geom_boxplot(aes(fill = foundation_spp), alpha = 0.3)+
-   #  stat_summary(size = 0.7)+
-   # geom_point(aes(fill = foundation_spp), shape = 23)+
    labs(x = "",
         y = " ")+
    scale_fill_manual(values = c("black","#34c230"), guide = "none")+
-   
    ggh4x::facet_grid2(nicenames2~month, scales = "free_y", independent = "y", switch = "y")+
    theme_bw()+
    theme(strip.background = element_blank(),
@@ -1324,9 +1168,6 @@ P_Aug_control<-data_long %>%
         plot.title = element_text(hjust = 0.5, size = 14)
   )
 
-
-
-
 P_Aug_impact<-data_long %>%
   filter(name %in% c("do_umol_l","nn_umol_l","nh4_umol_l","heterotrophic_bacterioplankton_m_l","bix","m_c"))%>%
   mutate(foundation_spp = case_when( foundation_spp == "Ocean"~ "Ocean",
@@ -1407,6 +1248,7 @@ Long_all%>%
   filter(p.value < 0.05) # unmanipulated mussel M_C is the only significant
 
 
+# Are the pool sizes the same by treatment
 MetaData %>%
   filter(Before_After == "Before") %>%
   ggplot(aes(x = Foundation_spp, y = SurfaceArea))+
@@ -1425,7 +1267,6 @@ ggsave(here("Output","Supp_Fig2.pdf"), width = 5, height = 5)
 ## calculate mean specific growth rate of HBac
 data_all %>%
   ungroup()%>%
-  #filter(name  == "heterotrophic_bacterioplankton_m_l") %>%
   select(pool_id,foundation_spp, time_point,sampling_day, before_after, removal_control,heterotrophic_bacterioplankton_m_l) %>%
   pivot_wider(names_from = time_point,
               values_from = heterotrophic_bacterioplankton_m_l) %>%
@@ -1443,8 +1284,4 @@ data_all %>%
   group_by(foundation_spp, before_after, manipulated) %>%
   summarise(mean_growth_rate = mean(change_val_hr, na.rm = TRUE),
             se_growth_rate = sd(change_val_hr, na.rm = TRUE)/sqrt(n()))
-
-
-
-  
 
