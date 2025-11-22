@@ -53,6 +53,7 @@ reverse2_trans <- function() {
   )
 }
 
+# Make the CUTI plot
 CT %>%
   filter(latitude == 45) %>%
   mutate(date = as_date(date)) %>%
@@ -84,18 +85,12 @@ CT %>%
  
 ggsave(here("Output","Figure_1b.pdf"), height = 8, width = 6)
 
-
-
-### show difference from the ocean
+### Clean up and bring together the chem data with metadata
 data_all<-data_all %>%
   mutate(nh4_umol_l = ifelse(nh4_umol_l>60, NA, nh4_umol_l)) %>% # drop the 2 crazy outliers
   mutate(time_point = factor(time_point, levels = c("start","end")),
-         do_umol_l = do_mg_l/0.032) # covert to micromol using 32 g/mol conversion
- 
-
-## add in the metadata
-data_all<-data_all %>%
-  left_join(MetaData %>%
+         do_umol_l = do_mg_l/0.032) %>% # covert to micromol using 32 g/mol conversion
+   left_join(MetaData %>% ## add in the metadata
               clean_names() %>%
               mutate(pool_id = as.character(pool_id)))%>%
   mutate(month = factor(ifelse(before_after == "Before", "July", "August (Upwelling)"), levels = c("July", "August (Upwelling)"))) 
@@ -176,9 +171,15 @@ Rates<-data_all%>%
               clean_names() %>%  # clean the names
               mutate(pool_id = as.character(pool_id)) %>%
               select(pool_id, before_after, surface_area,vol))%>% # add in the tide pool info
-  mutate(rate_hr = change/diff_time,# difference in value per hour
-         rate_m2_hr = rate_hr*vol/surface_area  # normalize it to surface area for a flux (mmol m-2 hr-1)
-  ) 
+  mutate(rate_hr = change/diff_time# difference in value per hour
+      #   rate_m2_hr = rate_hr*vol/surface_area  # normalize it to vol and surface area for a flux (mmol m-2 hr-1)
+  ) %>%
+  mutate(rate_m2_hr = ifelse(name %in% c("nn_umol_l", "do_umol_l", "nh4_umol_l", "heterotrophic_bacterioplankton_m_l"),
+                             rate_hr*vol/surface_area, #everything else
+                             rate_hr/surface_area)) %>% #fDOM 
+  mutate(rate_m2_hr = ifelse(name  == "bix" & rate_m2_hr < -0.2, NA,rate_m2_hr )) # one extreme outlier for BIX removed
+
+
 
 ### run models of rates with a BACI design
 mods_BACI<-Rates %>%
