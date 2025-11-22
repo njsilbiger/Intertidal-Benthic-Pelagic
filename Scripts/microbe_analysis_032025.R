@@ -190,7 +190,7 @@ Rates<-data_all%>%
   ungroup()%>% 
   select(pool_id:removal_control, time_point, do_umol_l, nn_umol_l:nh4_umol_l, heterotrophic_bacterioplankton_m_l:fi, tyrosine_like,tryptophan_like, phenylalanine_like,
          ultra_violet_humic_like,visible_humic_like,marine_humic_like) %>%
-  mutate(heterotrophic_bacterioplankton_m_l = heterotrophic_bacterioplankton_m_l *1e6 # convert to per L        
+  mutate(heterotrophic_bacterioplankton_m_l = heterotrophic_bacterioplankton_m_l *1e6 # convert to per L from microL       
   )%>%
   mutate_at(vars(do_umol_l:nh4_umol_l), .funs = function(x){x/1000}) %>% #convert to mmol and g for chem
   pivot_longer(cols = do_umol_l:marine_humic_like)%>%
@@ -1420,3 +1420,31 @@ MetaData %>%
         axis.text = element_text(size = 12),
         strip.text = element_text(size = 14))
 ggsave(here("Output","Supp_Fig2.pdf"), width = 5, height = 5)
+
+
+## calculate mean specific growth rate of HBac
+data_all %>%
+  ungroup()%>%
+  #filter(name  == "heterotrophic_bacterioplankton_m_l") %>%
+  select(pool_id,foundation_spp, time_point,sampling_day, before_after, removal_control,heterotrophic_bacterioplankton_m_l) %>%
+  pivot_wider(names_from = time_point,
+              values_from = heterotrophic_bacterioplankton_m_l) %>%
+  left_join(data_all %>%
+                ungroup()%>%
+                select(pool_id, foundation_spp, sampling_day, sampling_time, time_point) %>%
+                pivot_wider(names_from = time_point,
+                            values_from = sampling_time) %>%
+                mutate(change_hr = as.numeric(end-start)/3600) %>% # convert to hour
+              select(-c(start, end)) 
+  ) %>%
+  mutate(change_val_hr = ((end-start)/start)/change_hr) %>%
+  mutate(together = paste(before_after, removal_control),
+         manipulated = ifelse(together == "After Removal","Manipulated", "Not Manipulated")) %>%
+  group_by(foundation_spp, before_after, manipulated) %>%
+  summarise(mean_growth_rate = mean(change_val_hr, na.rm = TRUE),
+            se_growth_rate = sd(change_val_hr, na.rm = TRUE)/sqrt(n()))
+
+
+
+  
+
