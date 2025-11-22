@@ -172,11 +172,10 @@ Rates<-data_all%>%
               mutate(pool_id = as.character(pool_id)) %>%
               select(pool_id, before_after, surface_area,vol))%>% # add in the tide pool info
   mutate(rate_hr = change/diff_time# difference in value per hour
-      #   rate_m2_hr = rate_hr*vol/surface_area  # normalize it to vol and surface area for a flux (mmol m-2 hr-1)
   ) %>%
   mutate(rate_m2_hr = ifelse(name %in% c("nn_umol_l", "do_umol_l", "nh4_umol_l", "heterotrophic_bacterioplankton_m_l"),
-                             rate_hr*vol/surface_area, #everything else
-                             rate_hr/surface_area)) %>% #fDOM 
+                             rate_hr*vol/surface_area, #everything else normalize vol and surface area of tide pool
+                             rate_hr/surface_area)) %>% #fDOM not normalized to volume cuz unitless
   mutate(rate_m2_hr = ifelse(name  == "bix" & rate_m2_hr < -0.2, NA,rate_m2_hr )) # one extreme outlier for BIX removed
 
 
