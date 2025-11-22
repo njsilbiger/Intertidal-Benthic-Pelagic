@@ -959,16 +959,16 @@ scale_y2 <- Long_wfDOM %>%
                      "nh4_umol_l","nn_umol_l","bix", "m_c", "do_umol_l")) %>%
    mutate(nicenames2 = case_when(
     name == "heterotrophic_bacterioplankton_m_l" ~ "&Delta;Heterotrophic Bacteria <br> (cells m<sup>-2</sup> hr<sup>-1</sup>)",
-    name == "nh4_umol_l" ~ "&Delta;Ammonium <br> (&mu;mol m<sup>-2</sup> hr<sup>-1</sup>)",
-    name == "nn_umol_l" ~ "&Delta;Nitrate+Nitrite <br> (&mu;mol m<sup>-2</sup> hr<sup>-1</sup>)",
+    name == "nh4_umol_l" ~ "&Delta;Ammonium <br> (mmol m<sup>-2</sup> hr<sup>-1</sup>)",
+    name == "nn_umol_l" ~ "&Delta;Nitrate+Nitrite <br> (mmol m<sup>-2</sup> hr<sup>-1</sup>)",
     name == "bix"~"&Delta;BIX <br> (m<sup>-2</sup> hr<sup>-1</sup>)" ,
     name == "m_c"~"&Delta;M:C <br> (m<sup>-2</sup> hr<sup>-1</sup>)",
-    name == "do_umol_l"~"&Delta;Dissolved Oxygen <br> (&mu;mol m<sup>-2</sup> hr<sup>-1</sup>)"
+    name == "do_umol_l"~"&Delta;Dissolved Oxygen <br> (mmol m<sup>-2</sup> hr<sup>-1</sup>)"
   ))%>%
   mutate(nicenames2 = factor(nicenames2, levels = c(
-    "&Delta;Dissolved Oxygen <br> (&mu;mol m<sup>-2</sup> hr<sup>-1</sup>)",
-    "&Delta;Ammonium <br> (&mu;mol m<sup>-2</sup> hr<sup>-1</sup>)",
-    "&Delta;Nitrate+Nitrite <br> (&mu;mol m<sup>-2</sup> hr<sup>-1</sup>)",
+    "&Delta;Dissolved Oxygen <br> (mmol m<sup>-2</sup> hr<sup>-1</sup>)",
+    "&Delta;Ammonium <br> (mmol m<sup>-2</sup> hr<sup>-1</sup>)",
+    "&Delta;Nitrate+Nitrite <br> (mmol m<sup>-2</sup> hr<sup>-1</sup>)",
     "&Delta;BIX <br> (m<sup>-2</sup> hr<sup>-1</sup>)"  ,
     "&Delta;M:C <br> (m<sup>-2</sup> hr<sup>-1</sup>)" ,
     "&Delta;Heterotrophic Bacteria <br> (cells m<sup>-2</sup> hr<sup>-1</sup>)"
@@ -980,7 +980,7 @@ scale_y2 <- Long_wfDOM %>%
   select(foundation_spp, nicenames2, max, min) %>%
   pivot_longer(cols = max:min) %>%
   rename(rate_m2_hr = value) %>%
-  bind_rows(tibble(nicenames2 = "Ammonium <br> (&mu;mol m<sup>-2</sup> hr<sup>-1</sup>)", rate_m2_hr = 0)) %>%
+  bind_rows(tibble(nicenames2 = "Ammonium <br> (mmol m<sup>-2</sup> hr<sup>-1</sup>)", rate_m2_hr = 0)) %>%
   split(~nicenames2) |>
   map(~range(.x$rate_m2_hr)) |> 
   imap(
@@ -992,16 +992,16 @@ scale_y2 <- Long_wfDOM %>%
 
 rate_mean_plot<-Long_wfDOM %>%
   mutate(nicenames2 = case_when(
-    name == "do_umol_l" ~"&Delta;Dissolved Oxygen <br> (&mu;mol m<sup>-2</sup> hr<sup>-1</sup>)",
+    name == "do_umol_l" ~"&Delta;Dissolved Oxygen <br> (mmol m<sup>-2</sup> hr<sup>-1</sup>)",
     name == "heterotrophic_bacterioplankton_m_l" ~ "&Delta;Heterotrophic Bacteria <br> (cells m<sup>-2</sup> hr<sup>-1</sup>)",
-    name == "nh4_umol_l" ~ "&Delta;Ammonium <br> (&mu;mol m<sup>-2</sup> hr<sup>-1</sup>)",
-    name == "nn_umol_l" ~ "&Delta;Nitrate+Nitrite <br> (&mu;mol m<sup>-2</sup> hr<sup>-1</sup>)",
+    name == "nh4_umol_l" ~ "&Delta;Ammonium <br> (mmol m<sup>-2</sup> hr<sup>-1</sup>)",
+    name == "nn_umol_l" ~ "&Delta;Nitrate+Nitrite <br> (mmol m<sup>-2</sup> hr<sup>-1</sup>)",
     name == "bix"~"&Delta;BIX <br> (m<sup>-2</sup> hr<sup>-1</sup>)" ,
     name == "m_c"~"&Delta;M:C <br> (m<sup>-2</sup> hr<sup>-1</sup>)",
     ))%>%
-  mutate(nicenames2 = factor(nicenames2, levels = c("&Delta;Dissolved Oxygen <br> (&mu;mol m<sup>-2</sup> hr<sup>-1</sup>)",
-                                                  "&Delta;Ammonium <br> (&mu;mol m<sup>-2</sup> hr<sup>-1</sup>)",
-                                                  "&Delta;Nitrate+Nitrite <br> (&mu;mol m<sup>-2</sup> hr<sup>-1</sup>)",
+  mutate(nicenames2 = factor(nicenames2, levels = c("&Delta;Dissolved Oxygen <br> (mmol m<sup>-2</sup> hr<sup>-1</sup>)",
+                                                  "&Delta;Ammonium <br> (mmol m<sup>-2</sup> hr<sup>-1</sup>)",
+                                                  "&Delta;Nitrate+Nitrite <br> (mmol m<sup>-2</sup> hr<sup>-1</sup>)",
                                                   "&Delta;BIX <br> (m<sup>-2</sup> hr<sup>-1</sup>)"  ,
                                                   "&Delta;M:C <br> (m<sup>-2</sup> hr<sup>-1</sup>)" ,
                                                  "&Delta;Heterotrophic Bacteria <br> (cells m<sup>-2</sup> hr<sup>-1</sup>)"
@@ -1154,17 +1154,17 @@ scale_y3 <- value_plotdata %>%
    filter(name %in% c("do_umol_l","heterotrophic_bacterioplankton_m_l",
                       "nh4_umol_l","nn_umol_l","bix", "m_c")) %>%
    mutate(nicenames2 = case_when(
-     name == "do_umol_l"~"&Delta;Dissolved Oxygen <br> (&mu;mol m<sup>-2</sup> hr<sup>-1</sup>)",
+     name == "do_umol_l"~"&Delta;Dissolved Oxygen <br> (mmol m<sup>-2</sup> hr<sup>-1</sup>)",
      name == "heterotrophic_bacterioplankton_m_l" ~ "&Delta;Heterotrophic Bacteria <br> (cells m<sup>-2</sup> hr<sup>-1</sup>)",
-     name == "nh4_umol_l" ~ "&Delta;Ammonium <br> (&mu;mol m<sup>-2</sup> hr<sup>-1</sup>)",
-     name == "nn_umol_l" ~ "&Delta;Nitrate+Nitrite <br> (&mu;mol m<sup>-2</sup> hr<sup>-1</sup>)",
+     name == "nh4_umol_l" ~ "&Delta;Ammonium <br> (mmol m<sup>-2</sup> hr<sup>-1</sup>)",
+     name == "nn_umol_l" ~ "&Delta;Nitrate+Nitrite <br> (mmol m<sup>-2</sup> hr<sup>-1</sup>)",
      name == "bix"~"&Delta;BIX <br> (m<sup>-2</sup> hr<sup>-1</sup>)" ,
      name == "m_c"~"&Delta;M:C <br> (m<sup>-2</sup> hr<sup>-1</sup>)",
    ))%>%
    mutate(nicenames2 = factor(nicenames2, levels = c(
-     "&Delta;Dissolved Oxygen <br> (&mu;mol m<sup>-2</sup> hr<sup>-1</sup>)",
-     "&Delta;Ammonium <br> (&mu;mol m<sup>-2</sup> hr<sup>-1</sup>)",
-     "&Delta;Nitrate+Nitrite <br> (&mu;mol m<sup>-2</sup> hr<sup>-1</sup>)",
+     "&Delta;Dissolved Oxygen <br> (mmol m<sup>-2</sup> hr<sup>-1</sup>)",
+     "&Delta;Ammonium <br> (mmol m<sup>-2</sup> hr<sup>-1</sup>)",
+     "&Delta;Nitrate+Nitrite <br> (mmol m<sup>-2</sup> hr<sup>-1</sup>)",
      "&Delta;BIX <br> (m<sup>-2</sup> hr<sup>-1</sup>)"  ,
      "&Delta;M:C <br> (m<sup>-2</sup> hr<sup>-1</sup>)" ,
      "&Delta;Heterotrophic Bacteria <br> (cells m<sup>-2</sup> hr<sup>-1</sup>)"
@@ -1176,7 +1176,7 @@ scale_y3 <- value_plotdata %>%
    select(foundation_spp, nicenames2, max, min) %>%
    pivot_longer(cols = max:min) %>%
    rename(rate_m2_hr = value) %>%
-   bind_rows(tibble(nicenames2 = "Ammonium <br> (&mu;mol m<sup>-2</sup> hr<sup>-1</sup>)", rate_m2_hr = 0)) %>%
+   bind_rows(tibble(nicenames2 = "Ammonium <br> (mmol m<sup>-2</sup> hr<sup>-1</sup>)", rate_m2_hr = 0)) %>%
    split(~nicenames2) |>
    map(~range(.x$rate_m2_hr)) |> 
    imap(
@@ -1188,17 +1188,17 @@ scale_y3 <- value_plotdata %>%
  
   
  rate_box<-Long_wfDOM %>%
-   mutate(nicenames2 = case_when( name == "do_umol_l"~"&Delta;Dissolved Oxygen <br> (&mu;mol m<sup>-2</sup> hr<sup>-1</sup>)",
+   mutate(nicenames2 = case_when( name == "do_umol_l"~"&Delta;Dissolved Oxygen <br> (mmol m<sup>-2</sup> hr<sup>-1</sup>)",
      name == "heterotrophic_bacterioplankton_m_l" ~ "&Delta;Heterotrophic Bacteria <br> (cells m<sup>-2</sup> hr<sup>-1</sup>)",
-     name == "nh4_umol_l" ~ "&Delta;Ammonium <br> (&mu;mol m<sup>-2</sup> hr<sup>-1</sup>)",
-     name == "nn_umol_l" ~ "&Delta;Nitrate+Nitrite <br> (&mu;mol m<sup>-2</sup> hr<sup>-1</sup>)",
+     name == "nh4_umol_l" ~ "&Delta;Ammonium <br> (mmol m<sup>-2</sup> hr<sup>-1</sup>)",
+     name == "nn_umol_l" ~ "&Delta;Nitrate+Nitrite <br> (mmol m<sup>-2</sup> hr<sup>-1</sup>)",
      name == "bix"~"&Delta;BIX <br> (m<sup>-2</sup> hr<sup>-1</sup>)" ,
      name == "m_c"~"&Delta;M:C <br> (m<sup>-2</sup> hr<sup>-1</sup>)",
    ))%>%
    mutate(nicenames2 = factor(nicenames2, levels = c(
-     "&Delta;Dissolved Oxygen <br> (&mu;mol m<sup>-2</sup> hr<sup>-1</sup>)",
-     "&Delta;Ammonium <br> (&mu;mol m<sup>-2</sup> hr<sup>-1</sup>)",
-     "&Delta;Nitrate+Nitrite <br> (&mu;mol m<sup>-2</sup> hr<sup>-1</sup>)",
+     "&Delta;Dissolved Oxygen <br> (mmol m<sup>-2</sup> hr<sup>-1</sup>)",
+     "&Delta;Ammonium <br> (mmol m<sup>-2</sup> hr<sup>-1</sup>)",
+     "&Delta;Nitrate+Nitrite <br> (mmol m<sup>-2</sup> hr<sup>-1</sup>)",
      "&Delta;BIX <br> (m<sup>-2</sup> hr<sup>-1</sup>)"  ,
      "&Delta;M:C <br> (m<sup>-2</sup> hr<sup>-1</sup>)" ,
      "&Delta;Heterotrophic Bacteria <br> (cells m<sup>-2</sup> hr<sup>-1</sup>)"
