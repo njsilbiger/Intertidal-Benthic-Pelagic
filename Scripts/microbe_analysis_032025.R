@@ -1278,7 +1278,7 @@ data_all %>%
                 mutate(change_hr = as.numeric(end-start)/3600) %>% # convert to hour
               select(-c(start, end)) 
   ) %>%
-  mutate(change_val_hr = ((end-start)/start)/change_hr) %>%
+  mutate(change_val_hr = (log(end)-log(start))/change_hr) %>%
   mutate(together = paste(before_after, removal_control),
          manipulated = ifelse(together == "After Removal","Manipulated", "Not Manipulated")) %>%
   group_by(foundation_spp, before_after, manipulated) %>%
