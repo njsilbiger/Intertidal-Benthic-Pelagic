@@ -1,0 +1,13 @@
+Column ID,Units,Description
+PoolID,NA,Individual tide pool ID
+Foundation_spp,NA,"Phyllospadix = surfgrass, Mytilus = mussels, Ocean = adjacent ocean sample"
+Removal_Control,NA,removal or control tide pool groups. Removal had all foundation species removed
+Before_After,NA,Sampling before or after removal
+AdjMusselCover,%,"% cover of mussels, adjusted to add up to 100% (normalized to the canopy)"
+AdjSurfgrassCover,%,% cover of sufrgrass adjusted to add up to 100% (normalized to the canopy)
+MusselCover,%,"% cover of mussels, raw"
+SurfgrassCover,%,"% cover of surfgrass, raw"
+Diatoms,%,% cover of Diatoms (called microphytobenthos in the paper)
+allCCA,%,% cover of crustose coralline algae
+macroalgae,%,% cover of fleshy macroalgae
+consumers,%,"% cover of non-mussel consumers (anemones, barnacles, sponges, tube worms)"

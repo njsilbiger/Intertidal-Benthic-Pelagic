@@ -1270,7 +1270,7 @@ data_all %>%
   select(pool_id,foundation_spp, time_point,sampling_day, before_after, removal_control,heterotrophic_bacterioplankton_m_l) %>%
   pivot_wider(names_from = time_point,
               values_from = heterotrophic_bacterioplankton_m_l) %>%
-  left_join(data_all %>%
+  left_join(data_all %>% # bring in the change in time between samples
                 ungroup()%>%
                 select(pool_id, foundation_spp, sampling_day, sampling_time, time_point) %>%
                 pivot_wider(names_from = time_point,

@@ -1,0 +1,4 @@
+Column ID,Unit,Description
+date,date,year-month-day
+latitude,degree,degree latitude north
+CUTI,m2 s-1,Coastal Upwelling Transport Index Value

@@ -1,0 +1,27 @@
+Column ID,Units,Description
+pool_id,NA,Individual tide pool ID
+foundation_spp,NA,"Phyllospadix = surfgrass, Mytilus = mussels, Ocean = adjacent ocean sample"
+day_night,NA,All daytime samples
+sampling_group,NA,"Pools were sample across two days. 1 = first day, 2 = second day"
+before_after,NA,Sampling before or after removal
+removal_control,NA,removal or control tide pool groups. Removal had all foundation species removed
+group,NA,joined before_after and removal_control
+time_point,NA,"start = t0, end  = time final (end of low tide sample ~4-5 hours after emersion)"
+sampling_day,date,month/day/year of sampling
+sampling_time,time,hour:min:second of sampling
+do_mg_l,mg L-1,dissolved oxygen
+salinity,psu,salinity
+temp_pool,C,temperature
+nn_umol_l,umol L-1,nitrate+nitrite
+nh4_umol_l,umol L-1,ammonium
+heterotrophic_bacterioplankton_m_l,cells uL,heterotrophic bacteria counts
+m_c,NA,M:C fDOM indice (unitless ratio)
+bix,NA,BIX  fDOM indice (unitless ratio)
+hix,NA,HIX  fDOM indice (unitless ratio)
+fi,NA,FI  fDOM indice (unitless ratio)
+ultra_violet_humic_like,Raman units of water,ultra violet humic like fDOM
+marine_humic_like,Raman units of water,marine humic like fDOM
+visible_humic_like,Raman units of water,visibile humic like fDOM
+tryptophan_like,Raman units of water,tryptophan like fDOM
+tyrosine_like,Raman units of water,tyrosine like fDOM
+phenylalanine_like,Raman units of water,phenylalanine like fDOM
