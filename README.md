@@ -1,5 +1,7 @@
 # Foundation species modulate microbial benthic-pelagic coupling in the rocky intertidal  
 
+Journal: *Ecology Letters*
+
 Running Title: Rocky intertidal benthic-pelagic coupling   
 
 Nyssa J Silbiger1*, Jennifer B Fields2, Craig E Nelson3, Linda Wegley Kelly4  
