@@ -1,0 +1,13 @@
+Column ID,Units,Description
+PoolID,NA,Individual tide pool ID
+Foundation_spp,NA,"Phyllospadix = surfgrass, Mytilus = mussels, Ocean = adjacent ocean sample"
+Removal_Control,NA,removal or control tide pool groups. Removal had all foundation species removed
+Before_After,NA,Sampling before or after removal
+Perimeter,m,Perimeter of the tide pool
+MaxDepth,m,Maximum depth of the tide pool
+TideHeight,m,Tide height above mean lower low water
+Squares,count,# of squares in flexible mesh quadrat (10 cm x 10 cm)
+SurfaceArea,m2,bottom surface area of the tide pool
+Vol_m3,m3,tide pool volume in cubic meters
+SAtoV,ratio,surface area to volume ratio
+Vol,L,tide pool volume in L
