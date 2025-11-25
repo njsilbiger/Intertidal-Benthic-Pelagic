@@ -579,7 +579,7 @@ ggsave(here("Output","Figure_5.pdf"), width = 8, height = 4)
 
 
 DO_het_mod<-lm(data = Rates_wide %>%  
-                 mutate(het_carbon = heterotrophic_bacterioplankton_m_l*20/1e6) %>%
+                 mutate(het_carbon = heterotrophic_bacterioplankton_m_l*20/1e12) %>%
                    mutate(removal = case_when(removal_control == "Control"~"Unmanipulated",
                                               removal_control == "Removal"& month == "July" ~ "Unmanipulated",
                                               removal_control == "Removal"& month != "July" ~ "Foundation spp. removed"))%>%
@@ -1245,7 +1245,7 @@ Long_all%>%
   select(name, term, statistic,p.value) %>%
   ungroup() %>%
   filter(term == "surface_area") %>%
-  filter(p.value < 0.05) # unmanipulated mussel M_C is the only significant
+  filter(p.value < 0.05) # none significant
 
 
 # Are the pool sizes the same by treatment
