@@ -25,8 +25,8 @@ Abstract: Benthic–pelagic coupling, the reciprocal exchange of materials betwe
  
  [*Data*](https://github.com/njsilbiger/Intertidal-Benthic-Pelagic/tree/main/Data)
  - CommunityData.csv (Benthic community composition data)
- - CUTI.csv (Coastal Upwelling Transport Index data)
- - JointedChemData.csv (All the chemistry data used in this analysis)
+ - CUTI.csv (Coastal Upwelling Transport Index data) [Data Dictionary](https://github.com/njsilbiger/Intertidal-Benthic-Pelagic/blob/main/Data/DataDictionary_CUTI.csv)
+ - JointedChemData.csv (All the chemistry data used in this analysis) [Data Dictionary](https://github.com/njsilbiger/Intertidal-Benthic-Pelagic/blob/main/Data/DataDictionary_JoinedChemData.csv)
  - TidePollDescriptions.csv (Metadata on the tide pools) 
  
  [*Output*](https://github.com/njsilbiger/Intertidal-Benthic-Pelagic/tree/main/Output)
