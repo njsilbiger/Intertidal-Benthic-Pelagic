@@ -1,3 +1,5 @@
+[![DOI](https://zenodo.org/badge/1091327846.svg)](https://doi.org/10.5281/zenodo.17717287)
+
 # Foundation species modulate microbial benthic-pelagic coupling in the rocky intertidal  
 
 Journal: *Ecology Letters*
